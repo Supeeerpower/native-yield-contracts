@@ -2,9 +2,13 @@
 pragma solidity ^0.8.15;
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-
 import {Semver} from "../universal/Semver.sol";
 
+/**
+ * @title Configure
+ * @notice Manages yield configurations and governance for contracts
+ * @dev Implements yield mode management and authorization controls
+ */
 enum YieldMode {
     AUTOMATIC,
     VOID,
@@ -44,182 +48,127 @@ interface IConfigure {
     function readYieldConfiguration(address contractAddress) external view returns (uint8);
 }
 
-/// @title Configure
 contract Configure is IConfigure, Initializable, Semver {
+    /// @notice Address of the yield contract
     address public immutable YIELD_CONTRACT;
 
+    /// @notice Mapping of contract addresses to their governors
     mapping(address => address) public governorMap;
 
+    // Events for better tracking
+    event GovernorUpdated(address indexed contractAddress, address indexed newGovernor);
+    event YieldModeUpdated(address indexed contractAddress, YieldMode mode);
+    event YieldClaimed(address indexed contractAddress, address indexed recipient, uint256 amount);
+
     constructor(address _yieldContract) Semver(1, 0, 0) {
+        require(_yieldContract != address(0), "Invalid yield contract");
         YIELD_CONTRACT = _yieldContract;
         _disableInitializers();
     }
 
     function initialize() public initializer {}
 
-    /**
-     * @notice Checks if the caller is the governor of the contract
-     * @param contractAddress The address of the contract
-     * @return A boolean indicating if the caller is the governor
-     */
     function isGovernor(address contractAddress) public view returns (bool) {
         return msg.sender == governorMap[contractAddress];
     }
-    /**
-     * @notice Checks if the governor is not set for the contract
-     * @param contractAddress The address of the contract
-     * @return boolean indicating if the governor is not set
-     */
 
     function governorNotSet(address contractAddress) internal view returns (bool) {
         return governorMap[contractAddress] == address(0);
     }
-    /**
-     * @notice Checks if the caller is authorized
-     * @param contractAddress The address of the contract
-     * @return A boolean indicating if the caller is authorized
-     */
 
     function isAuthorized(address contractAddress) public view returns (bool) {
         return isGovernor(contractAddress) || (governorNotSet(contractAddress) && msg.sender == contractAddress);
     }
 
-    /**
-     * @notice contract configures its yield modes and sets the governor. called by contract
-     * @param _yieldMode The yield mode to be set
-     * @param governor The address of the governor to be set
-     */
     function configure(YieldMode _yieldMode, address governor) external {
-        // requires that no governor is set for contract
         require(isAuthorized(msg.sender), "not authorized to configure contract");
-        // set governor
         governorMap[msg.sender] = governor;
-        // set yield mode
         IYield(YIELD_CONTRACT).configure(msg.sender, uint8(_yieldMode));
+        emit GovernorUpdated(msg.sender, governor);
+        emit YieldModeUpdated(msg.sender, _yieldMode);
     }
 
-    /**
-     * @notice Configures the yield modes and sets the governor for a specific contract. called by authorized user
-     * @param contractAddress The address of the contract to be configured
-     * @param _yieldMode The yield mode to be set
-     * @param _newGovernor The address of the new governor to be set
-     */
     function configureContract(address contractAddress, YieldMode _yieldMode, address _newGovernor) external {
-        // only allow governor, or if no governor is set, the contract itself to configure
         require(isAuthorized(contractAddress), "not authorized to configure contract");
-        // set governor
         governorMap[contractAddress] = _newGovernor;
-        // set yield mode
         IYield(YIELD_CONTRACT).configure(contractAddress, uint8(_yieldMode));
+        emit GovernorUpdated(contractAddress, _newGovernor);
+        emit YieldModeUpdated(contractAddress, _yieldMode);
     }
 
-    /**
-     * @notice Configures the yield mode to CLAIMABLE for the contract that calls this function
-     */
     function configureClaimableYield() external {
         require(isAuthorized(msg.sender), "not authorized to configure contract");
         IYield(YIELD_CONTRACT).configure(msg.sender, uint8(YieldMode.CLAIMABLE));
+        emit YieldModeUpdated(msg.sender, YieldMode.CLAIMABLE);
     }
 
-    /**
-     * @notice Configures the yield mode to CLAIMABLE for a specific contract. Called by an authorized user
-     * @param contractAddress The address of the contract to be configured
-     */
     function configureClaimableYieldOnBehalf(address contractAddress) external {
         require(isAuthorized(contractAddress), "not authorized to configure contract");
         IYield(YIELD_CONTRACT).configure(contractAddress, uint8(YieldMode.CLAIMABLE));
+        emit YieldModeUpdated(contractAddress, YieldMode.CLAIMABLE);
     }
 
-    /**
-     * @notice Configures the yield mode to AUTOMATIC for the contract that calls this function
-     */
     function configureAutomaticYield() external {
         require(isAuthorized(msg.sender), "not authorized to configure contract");
         IYield(YIELD_CONTRACT).configure(msg.sender, uint8(YieldMode.AUTOMATIC));
+        emit YieldModeUpdated(msg.sender, YieldMode.AUTOMATIC);
     }
 
-    /**
-     * @notice Configures the yield mode to AUTOMATIC for a specific contract. Called by an authorized user
-     * @param contractAddress The address of the contract to be configured
-     */
     function configureAutomaticYieldOnBehalf(address contractAddress) external {
         require(isAuthorized(contractAddress), "not authorized to configure contract");
         IYield(YIELD_CONTRACT).configure(contractAddress, uint8(YieldMode.AUTOMATIC));
+        emit YieldModeUpdated(contractAddress, YieldMode.AUTOMATIC);
     }
 
-    /**
-     * @notice Configures the yield mode to VOID for the contract that calls this function
-     */
     function configureVoidYield() external {
         require(isAuthorized(msg.sender), "not authorized to configure contract");
         IYield(YIELD_CONTRACT).configure(msg.sender, uint8(YieldMode.VOID));
+        emit YieldModeUpdated(msg.sender, YieldMode.VOID);
     }
 
-    /**
-     * @notice Configures the yield mode to VOID for a specific contract. Called by an authorized user
-     * @param contractAddress The address of the contract to be configured
-     */
     function configureVoidYieldOnBehalf(address contractAddress) external {
         require(isAuthorized(contractAddress), "not authorized to configure contract");
         IYield(YIELD_CONTRACT).configure(contractAddress, uint8(YieldMode.VOID));
+        emit YieldModeUpdated(contractAddress, YieldMode.VOID);
     }
 
-    /**
-     * @notice Configures the governor for the contract that calls this function
-     */
     function configureGovernor(address _governor) external {
         require(isAuthorized(msg.sender), "not authorized to configure contract");
         governorMap[msg.sender] = _governor;
+        emit GovernorUpdated(msg.sender, _governor);
     }
 
-    /**
-     * @notice Configures the governor for a specific contract. Called by an authorized user
-     * @param contractAddress The address of the contract to be configured
-     */
     function configureGovernorOnBehalf(address _newGovernor, address contractAddress) external {
         require(isAuthorized(contractAddress), "not authorized to configure contract");
         governorMap[contractAddress] = _newGovernor;
+        emit GovernorUpdated(contractAddress, _newGovernor);
     }
 
-    // claim methods
-
-    /**
-     * @notice Claims yield for a specific contract. Called by an authorized user
-     * @param contractAddress The address of the contract for which yield is to be claimed
-     * @param recipientOfYield The address of the recipient of the yield
-     * @param amount The amount of yield to be claimed
-     * @return The amount of yield that was claimed
-     */
     function claimYield(address contractAddress, address recipientOfYield, uint256 amount) external returns (uint256) {
         require(isAuthorized(contractAddress), "Not authorized to claim yield");
-        return IYield(YIELD_CONTRACT).claim(contractAddress, recipientOfYield, amount);
+        require(recipientOfYield != address(0), "Invalid recipient");
+        require(amount > 0, "Amount must be greater than 0");
+
+        uint256 claimed = IYield(YIELD_CONTRACT).claim(contractAddress, recipientOfYield, amount);
+        emit YieldClaimed(contractAddress, recipientOfYield, claimed);
+        return claimed;
     }
-    /**
-     * @notice Claims all yield for a specific contract. Called by an authorized user
-     * @param contractAddress The address of the contract for which all yield is to be claimed
-     * @param recipientOfYield The address of the recipient of the yield
-     * @return The amount of yield that was claimed
-     */
 
     function claimAllYield(address contractAddress, address recipientOfYield) external returns (uint256) {
         require(isAuthorized(contractAddress), "Not authorized to claim yield");
+        require(recipientOfYield != address(0), "Invalid recipient");
+
         uint256 amount = IYield(YIELD_CONTRACT).getClaimableAmount(contractAddress);
-        return IYield(YIELD_CONTRACT).claim(contractAddress, recipientOfYield, amount);
+        require(amount > 0, "No yield to claim");
+
+        uint256 claimed = IYield(YIELD_CONTRACT).claim(contractAddress, recipientOfYield, amount);
+        emit YieldClaimed(contractAddress, recipientOfYield, claimed);
+        return claimed;
     }
 
-    /**
-     * @notice Reads the claimable yield for a specific contract
-     * @param contractAddress The address of the contract for which the claimable yield is to be read
-     * @return claimable yield
-     */
     function readClaimableYield(address contractAddress) public view returns (uint256) {
         return IYield(YIELD_CONTRACT).getClaimableAmount(contractAddress);
     }
-    /**
-     * @notice Reads the yield configuration for a specific contract
-     * @param contractAddress The address of the contract for which the yield configuration is to be read
-     * @return uint8 representing yield enum
-     */
 
     function readYieldConfiguration(address contractAddress) public view returns (uint8) {
         return IYield(YIELD_CONTRACT).getConfiguration(contractAddress);

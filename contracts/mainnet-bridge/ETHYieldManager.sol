@@ -31,15 +31,15 @@ contract ETHYieldManager is YieldManager, Semver {
     /// @dev Converts negative yields to positive values for L2 processing
     function _reportYield(int256 yield) internal override {
         if (yield <= 0) return;
-        
+
         // Safe conversion since we checked yield > 0
         uint256 yieldAmount = uint256(yield);
-        
+
         // Report yield to L2
         portal.depositTransaction{value: 0}(
-            address(0),  // recipient
+            address(0), // recipient
             yieldAmount, // value
-            false       // isCreation
+            false // isCreation
         );
     }
 
