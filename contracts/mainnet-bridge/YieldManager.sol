@@ -43,9 +43,6 @@ abstract contract YieldManager is Ownable2StepUpgradeable, WithdrawalQueue, Dele
     /// @notice Address of the insurance module.
     address public insurance;
 
-    /// @notice Address of the L1BlastBridge.
-    address public blastBridge;
-
     /// @notice Sum of negative yields to track the slippage between L2-L1 share price.
     ///         If negative yields accumulate, L1 withdrawals are discounted to cover the
     ///         loss.
@@ -96,7 +93,6 @@ abstract contract YieldManager is Ownable2StepUpgradeable, WithdrawalQueue, Dele
     error InsufficientInsuranceBalance();
     error NegativeYieldFromInsuredProvider();
     error TotalValueIsZero();
-    error CallerIsNotBlastBridge();
     error ProviderNotFound();
     error YieldProviderIsNotMeantForThisManager();
     error NegativeYieldIncrease();
@@ -104,14 +100,6 @@ abstract contract YieldManager is Ownable2StepUpgradeable, WithdrawalQueue, Dele
     modifier onlyAdmin() {
         if (msg.sender != admin) {
             revert CallerIsNotAdmin();
-        }
-        _;
-    }
-
-    /// @notice Modifier only allowing the L1BlastBridge to call a function.
-    modifier onlyBlastBridge() {
-        if (msg.sender != blastBridge) {
-            revert CallerIsNotBlastBridge();
         }
         _;
     }
@@ -153,13 +141,6 @@ abstract contract YieldManager is Ownable2StepUpgradeable, WithdrawalQueue, Dele
         insurance = _insurance;
         insuranceFeeBips = _insuranceFeeBips;
         insuranceWithdrawalBuffer = _withdrawalBuffer;
-    }
-
-    /// @notice Set the address of the L1BlastBridge.
-    /// @param _blastBridge Address of the L1BlastBridge.
-    function setBlastBridge(address _blastBridge) external onlyOwner {
-        require(_blastBridge != address(0));
-        blastBridge = _blastBridge;
     }
 
     /// @notice Add a yield provider contract.
@@ -387,7 +368,7 @@ abstract contract YieldManager is Ownable2StepUpgradeable, WithdrawalQueue, Dele
     ///         by the provider.
     /// @param providerAddress Address of yield provider.
     /// @param amount          Amount of additional staked funds.
-    function recordStakedDeposit(address providerAddress, uint256 amount) external onlyBlastBridge {
+    function recordStakedDeposit(address providerAddress, uint256 amount) internal {
         if (!_providers.contains(providerAddress)) {
             revert ProviderNotFound();
         }

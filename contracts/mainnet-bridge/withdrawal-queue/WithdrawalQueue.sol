@@ -12,7 +12,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 /// @title WithdrawalQueue
 /// @notice Queue for storing and managing withdrawal requests.
 ///         This contract is based on Lido's WithdrawalQueue and has been
-///         modified to support Blast specific logic such as withdrawal discounts.
+///         modified to support Fuse specific logic such as withdrawal discounts.
 contract WithdrawalQueue is Initializable {
     using EnumerableSet for EnumerableSet.UintSet;
     using SafeERC20 for IERC20;

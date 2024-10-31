@@ -26,7 +26,7 @@ contract vETH is ERC20Rebasing, Semver {
     error InsufficientNativeFee();
 
     /// @custom:semver 1.0.0
-    /// @param _reporter        Address of the L2 Blast bridge.
+    /// @param _reporter        Address of the Fuse Layerzero bridge.
     /// @param _remoteToken     Address of the corresponding L1 token.
     constructor(address _reporter, address _remoteToken) ERC20Rebasing(_reporter, 18) Semver(1, 0, 0) {
         REMOTE_TOKEN = _remoteToken;

@@ -148,7 +148,7 @@ abstract contract ERC20Rebasing is ERC20PermitUpgradeable, SharesBase, IERC20 {
         return true;
     }
 
-    /// @notice --- Blast Interface ---
+    /// @notice --- Configure Interface ---
 
     /// @notice Query an account's configured yield mode.
     /// @param account Address to query the configuration.
