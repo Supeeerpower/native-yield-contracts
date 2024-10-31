@@ -67,6 +67,11 @@ abstract contract ERC20Rebasing is ERC20PermitUpgradeable, SharesBase, IERC20 {
     /// @param amount    Amount of yield claimed.
     event Claim(address indexed account, address indexed recipient, uint256 amount);
 
+    /// @notice Emitted when yield is distributed.
+    /// @param amount    Amount of yield distributed.
+    /// @param newPrice  New share price.
+    event YieldDistributed(uint256 amount, uint256 newPrice);
+
     error InsufficientBalance();
     error InsufficientAllowance();
     error TransferFromZeroAddress();
@@ -75,6 +80,8 @@ abstract contract ERC20Rebasing is ERC20PermitUpgradeable, SharesBase, IERC20 {
     error ApproveToZeroAddress();
     error ClaimToZeroAddress();
     error NotClaimableAccount();
+    error InvalidAmount();
+    error InvalidConfiguration();
 
     /// @param _decimals Number of decimals.
     constructor(address _reporter, uint8 _decimals) SharesBase(_reporter) {
@@ -103,7 +110,7 @@ abstract contract ERC20Rebasing is ERC20PermitUpgradeable, SharesBase, IERC20 {
 
     /// @inheritdoc IERC20
     function totalSupply() external view returns (uint256) {
-        return price * _totalShares / 1e18 + _totalVoidAndRemainders;
+        return price * _totalShares + _totalVoidAndRemainders;
     }
 
     /// @inheritdoc IERC20

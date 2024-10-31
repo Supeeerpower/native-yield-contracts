@@ -4,23 +4,24 @@ pragma solidity ^0.8.15;
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {IERC165} from "@openzeppelin/contracts/utils/introspection/IERC165.sol";
 import {MessagingFee} from "@layerzerolabs/lz-evm-protocol-v2/contracts/interfaces/ILayerZeroEndpointV2.sol";
-
 import {Semver} from "../universal/Semver.sol";
 import {ERC20Rebasing} from "./ERC20Rebasing.sol";
 import {IConfigure, YieldMode} from "./Configure.sol";
 import {FuseOApp, MessageType} from "../OApp/FuseOApp.sol";
 
-/// @custom:proxied
-/// @title vETH
-/// @notice Rebasing ERC20 token with the share price determined by an Layerzero
-///         REPORTER. Conforms to interface to allow mint/burn
-///         interactions from the REPORTER.
+/**
+ * @title vETH
+ * @notice Rebasing ERC20 token with LayerZero integration
+ * @dev Implements cross-chain token functionality with yield distribution
+ */
 contract vETH is ERC20Rebasing, Semver {
     /// @notice Address of the corresponding version of this token on the remote chain.
     address public immutable REMOTE_TOKEN;
 
+    // Mutable state
     address public CONFIGURE;
 
+    // Custom errors
     error CallerIsNotFrom();
     error InsufficientNativeFee();
 

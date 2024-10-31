@@ -4,8 +4,11 @@ pragma solidity ^0.8.15;
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {YieldMode} from "./Configure.sol";
 
-/// @title SharesBase
-/// @notice Base contract to track share rebasing and yield reporting.
+/**
+ * @title SharesBase
+ * @notice Base contract for tracking share rebasing and yield reporting
+ * @dev Implements core yield distribution logic
+ */
 abstract contract SharesBase is Initializable {
     /// @notice Approved yield reporter.
     address public immutable REPORTER;
@@ -17,27 +20,24 @@ abstract contract SharesBase is Initializable {
     ///         to the share price.
     uint256 public pending;
 
-    /// @notice Reserve extra slots (to a total of 50) in the storage layout for future upgrades.
-    ///         A gap size of 48 was chosen here, so that the first slot used in a child contract
-    ///         would be a multiple of 50.
-    uint256[48] private __gap;
-
-    /// @notice Emitted when a new share price is set after a yield event.
+    // Events
     event NewPrice(uint256 price);
 
+    // Custom errors
     error InvalidReporter();
     error DistributeFailed(uint256 count, uint256 pending);
     error PriceIsInitialized();
+    error ZeroAddress();
+
+    uint256[48] private __gap;
 
     modifier onlyReporter() {
-        if (msg.sender != REPORTER) {
-            revert InvalidReporter();
-        }
+        if (msg.sender != REPORTER) revert InvalidReporter();
         _;
     }
 
-    /// @param _reporter Address of the approved yield reporter.
     constructor(address _reporter) {
+        if (_reporter == address(0)) revert ZeroAddress();
         REPORTER = _reporter;
     }
 
