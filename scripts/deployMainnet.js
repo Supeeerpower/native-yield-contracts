@@ -13,7 +13,7 @@ async function main() {
 
   const MainnetOApp = await ethers.getContractFactory("MainnetOApp", deployer);
   const mainnetOApp = await MainnetOApp.deploy(
-    process.env.HOLESKY_EA,
+    process.env.MAINNET_EA,
     deployer.address
   );
   await mainnetOApp.waitForDeployment();
@@ -88,7 +88,7 @@ async function main() {
   // Verify MainnetOApp
   await hre.run("verify:verify", {
     address: mainnetOAppAddress,
-    constructorArguments: [process.env.HOLESKY_EA, deployer.address],
+    constructorArguments: [process.env.MAINNET_EA, deployer.address],
   });
   console.log("MainnetOApp verified");
 

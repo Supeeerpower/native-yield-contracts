@@ -12,10 +12,7 @@ async function main() {
   console.log("Deploying contracts with the account:", deployer.address);
 
   const FuseOApp = await ethers.getContractFactory("FuseOApp", deployer);
-  const fuseOApp = await FuseOApp.deploy(
-    process.env.FUSESPARK_EA,
-    deployer.address
-  );
+  const fuseOApp = await FuseOApp.deploy(process.env.FUSE_EA, deployer.address);
   await fuseOApp.waitForDeployment();
   const fuseOAppAddress = await fuseOApp.getAddress();
   console.log("FuseOApp deployed to:", fuseOAppAddress);
@@ -39,7 +36,7 @@ async function main() {
   // Verify FuseOApp
   await hre.run("verify:verify", {
     address: fuseOAppAddress,
-    constructorArguments: [process.env.FUSESPARK_EA, deployer.address],
+    constructorArguments: [process.env.FUSE_EA, deployer.address],
   });
   console.log("FuseOApp verified");
 

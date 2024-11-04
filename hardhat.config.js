@@ -27,11 +27,21 @@ const config = {
       url: process.env.FUSESPARK_RPC_URL,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
     },
+    mainnet: {
+      url: process.env.MAINNET_RPC_URL,
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+    },
+    fuse: {
+      url: process.env.FUSE_RPC_URL,
+      accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
+    },
   },
   etherscan: {
     apiKey: {
       holesky: process.env.ETHERSCAN_API_KEY || "",
       fusespark: process.env.FUSESPARK_API_KEY || "",
+      fuse: process.env.FUSE_API_KEY || "",
+      mainnet: process.env.ETHERSCAN_API_KEY || "",
     },
     customChains: [
       {
@@ -40,6 +50,14 @@ const config = {
         urls: {
           apiURL: "https://explorer.fusespark.io/api",
           browserURL: "https://explorer.fusespark.io/",
+        },
+      },
+      {
+        network: "fuse",
+        chainId: 122,
+        urls: {
+          apiURL: "https://explorer.fuse.io/api",
+          browserURL: "https://explorer.fuse.io/",
         },
       },
     ],

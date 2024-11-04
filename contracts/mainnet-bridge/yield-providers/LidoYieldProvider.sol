@@ -55,8 +55,8 @@ struct WithdrawalRequestStatus {
 /// @title LidoYieldProvider
 /// @notice Provider for the Lido (ETH) yield source.
 contract LidoYieldProvider is YieldProvider {
-    ILido public constant LIDO = ILido(0x3F1c547b21f65e10480dE3ad8E19fAAC46C95034);
-    IWithdrawalQueue public constant WITHDRAWAL_QUEUE = IWithdrawalQueue(0xc7cc160b58F8Bb0baC94b80847E2CF2800565C50);
+    ILido public constant LIDO = ILido(0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84);
+    IWithdrawalQueue public constant WITHDRAWAL_QUEUE = IWithdrawalQueue(0x889edC2eDab5f40e902b864aD4d7AdE8E412F9B1);
 
     address public immutable THIS;
     uint256 public immutable claimBatchSize = 10;
