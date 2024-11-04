@@ -20,7 +20,7 @@ contract FuseOApp is OApp {
     vETH public VETH;
 
     string public data = "Nothing received yet.";
-    uint32 immutable DSTEID = 40217;
+    uint32 immutable DSTEID = 30101;
 
     error CallerIsNotVETH();
 

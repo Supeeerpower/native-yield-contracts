@@ -20,7 +20,7 @@ contract MainnetOApp is OApp {
     Portal public portal;
 
     string public data = "Nothing received yet.";
-    uint32 immutable DSTEID = 40138;
+    uint32 immutable DSTEID = 30138;
 
     error CallerIsNotPortal();
 
